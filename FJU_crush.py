@@ -16,7 +16,7 @@ import pymysql
 import datetime
 
 
-#COW-BEI FJU scrape
+#FJU CRUSH scrape
 def main():
     chrome_options = webdriver.ChromeOptions()
     prefs = {"profile.default_content_setting_values.notifications" : 2} #關閉chrome通知提醒
@@ -28,10 +28,10 @@ def main():
     
     _login(driver) #登入FB
     
-    cowbei_fju = "https://www.facebook.com/cowbeifju/"
-    _scrape_article(driver, cowbei_fju) #搜尋靠北文章
+    fju_crush = "https://www.facebook.com/FJUCrush/"
+    _scrape_article(driver, fju_crush) #搜尋告白文章
         
-    _upload_db(cowbei_article) #匯入至 angel_pair > complain
+    _upload_db(crush_article) #匯入至 angel_pair > confession
     
     driver.close()
     
@@ -53,7 +53,7 @@ def _scrape_article(driver, href):
     driver.get(href)
     
     time.sleep(1)
-    _scroll_to_bottom(driver, 1)
+    #_scroll_to_bottom(driver, 1)
     
     time.sleep(2)
     driver.find_element_by_xpath("//div[@class='_1xnd']/div[@class='_1xnd']/div/div[@class='_4z-w']/a").click() #顯示全部貼文
@@ -61,15 +61,15 @@ def _scrape_article(driver, href):
     time.sleep(3)
     article_context = driver.find_elements_by_css_selector("._5pbx")
     
-    global cowbei_article
+    global crush_article
     
-    latest_index = _check_duplicate()
+    #latest_index = _check_duplicate()
     
     for context in article_context:
-        cowbei = re.split('#|更多', context.text)
-        if cowbei[1][4:9] > latest_index:
-            cowbei_article.append(cowbei[1].strip("\n"))
-            #print(cowbei[1], "\n---------------------------------------------------------")
+        crush = re.split('#|更多', context.text)
+        #if crush[1][4:9] > latest_index:
+        crush_article.append(crush[0].strip("\n"))
+        print(crush[0], "\n---------------------------------------------------------")
 
 def _scroll_to_bottom(driver, scroll_count):
     scroll_pause_time = 0.8
@@ -117,13 +117,13 @@ def _upload_db(article_list):
     date = datetime.datetime.now().strftime("%Y/%m/%d")
     time = datetime.datetime.now().strftime("%H:%M:%S")
     
-    cur.executemany("INSERT INTO complain(userid, date, time, head, article) VALUES (1, %s, %s, %s, %s)", [(date, time, article[:10], article[10:]) for article in article_list])
+    cur.executemany("INSERT INTO confession(userid, date, time, head, article) VALUES (2, %s, %s, %s, %s)", [(date, time, "＃告白輔大 "+article[:15]+"...", article[:]) for article in article_list])
     
     cur.close()
     conn.close()
     print("Upload to SQL successful...")
 
 
-cowbei_article = list()
+crush_article = list()
 main()
 
