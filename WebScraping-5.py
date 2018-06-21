@@ -108,6 +108,12 @@ cur.execute("SELECT * FROM businessHR")
 
 print(cur.fetchone())
 
+#for row in cur:
+#    print(row)
+
+#row = cur.fetchall()
+#print(row[0][2])
+
 cur.close()
 conn.close()
 

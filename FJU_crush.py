@@ -60,16 +60,19 @@ def _scrape_article(driver, href):
     
     time.sleep(3)
     article_context = driver.find_elements_by_css_selector("._5pbx")
-    
+
     global crush_article
-    
-    #latest_index = _check_duplicate()
+
+    latest_head = _check_duplicate()
+    print(latest_head)
     
     for context in article_context:
         crush = re.split('#|更多', context.text)
-        #if crush[1][4:9] > latest_index:
-        crush_article.append(crush[0].strip("\n"))
-        print(crush[0], "\n---------------------------------------------------------")
+        if not re.match(latest_head, crush[0]):
+            crush_article.append(crush[0].strip("\n"))
+            print(crush[0], "\n---------------------------------------------------------")
+        else:
+            break
 
 def _scroll_to_bottom(driver, scroll_count):
     scroll_pause_time = 0.8
@@ -102,11 +105,11 @@ def _check_duplicate():
     
     cur = conn.cursor()
     cur.execute("USE angel_pair")
-    cur.execute("SELECT `head` FROM `complain` WHERE `head` LIKE '%靠北輔大%' ORDER BY `head` DESC LIMIT 1")
+    cur.execute("SELECT `head` FROM `confession` WHERE `head` LIKE '%告白輔大%' ORDER BY `date` DESC, `time` DESC,`articleid` ASC LIMIT 1")
     
-    latest_index = cur.fetchone()
+    latest_head = cur.fetchone()
     
-    return latest_index[0][4:]
+    return latest_head[0][6:-3]
 
 def _upload_db(article_list):
     conn = pymysql.connect(host='127.0.0.1', user='root', passwd='1234', charset='utf8', autocommit=True)
@@ -117,7 +120,7 @@ def _upload_db(article_list):
     date = datetime.datetime.now().strftime("%Y/%m/%d")
     time = datetime.datetime.now().strftime("%H:%M:%S")
     
-    cur.executemany("INSERT INTO confession(userid, date, time, head, article) VALUES (2, %s, %s, %s, %s)", [(date, time, "＃告白輔大 "+article[:15]+"...", article[:]) for article in article_list])
+    cur.executemany("INSERT INTO confession(userid, date, time, head, article) VALUES (1, %s, %s, %s, %s)", [(date, time, "＃告白輔大 "+article[:15]+"...", article[:]) for article in article_list])
     
     cur.close()
     conn.close()
